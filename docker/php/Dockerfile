@@ -9,7 +9,8 @@ RUN apt update \
     # vimをインストール
     # MariaDBデータベースのクライアントアプリケーションである「mysql」を使えるように「mariadb-client」をインストール
     # libzip-devはzip圧縮時に必要となるライブラリ(libzip は、zlib を使用する)
-    && apt install -y zlib1g-dev mariadb-client vim libzip-dev \
+    && apt install -y zlib1g-dev mariadb-client vim libzip-dev supervisor \
+    && mkdir -p /var/log/supervisord \
     # docker-php-ext-installはPHPに標準で備わっている拡張パッケージのインストール＆有効化ができるコマンド
     # PDO_MYSQL は、PHP から MySQL データベースへのアクセスを可能にするための PHP Data Objects (PDO) インターフェイス を実装したドライバ。
     && docker-php-ext-install zip pdo_mysql \
@@ -18,7 +19,7 @@ RUN apt update \
     # xdebugのインストール
     && pecl install xdebug \
     && docker-php-ext-enable xdebug
-    
+
 # Composerのインストール & パス通す
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -29,3 +30,6 @@ RUN apt install -y npm \
 
 # RUN , CMD , ENTRYPOINT , COPY , ADD を実行する時のワーキングディレクトリを指定
 WORKDIR /var/www
+
+COPY laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
+CMD ["/usr/bin/supervisord"]
